@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import axios from "axios";
 
 class Register extends Component {
   constructor() {
@@ -29,6 +30,11 @@ class Register extends Component {
       password2: this.state.password2
     };
     console.log(newUser);
+
+    axios
+      .post("/api/users/register", newUser)
+      .then(res => console.log(res.data))
+      .catch(err => console.log(err.response.data));
   }
   render() {
     return (
@@ -49,6 +55,7 @@ class Register extends Component {
                     name="name"
                     value={this.state.name}
                     onChange={this.onChange}
+                    autoComplete="off"
                   />
                 </div>
                 <div className="form-group">
@@ -59,8 +66,9 @@ class Register extends Component {
                     value={this.state.email}
                     onChange={this.onChange}
                     name="email"
+                    autoComplete="off"
                   />
-                  <small classNameName="form-text text-muted">
+                  <small className="form-text text-muted">
                     This site uses Gravatar so if you want a profile image, use
                     a Gravatar email
                   </small>
@@ -73,6 +81,7 @@ class Register extends Component {
                     name="password"
                     value={this.state.password}
                     onChange={this.onChange}
+                    autoComplete="off"
                   />
                 </div>
                 <div className="form-group">
@@ -83,6 +92,7 @@ class Register extends Component {
                     name="password2"
                     value={this.state.password2}
                     onChange={this.onChange}
+                    autoComplete="off"
                   />
                 </div>
                 <input type="submit" className="btn btn-info btn-block mt-4" />
