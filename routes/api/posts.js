@@ -26,6 +26,30 @@ router.get("/", (req, res) => {
     .catch(err => res.status(404).json({ nopostfound: "No posts found" }));
 });
 
+// @route   POST api/posts
+// @desc    Create post
+// @access  Private
+router.post(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const { errors, isValid } = validatePostInput(req.body);
+
+    if (!isValid) {
+      //if any errors
+      return res.status(400).json(errors);
+    }
+    const newPost = new Post({
+      text: req.body.text,
+      name: req.body.name,
+      avatar: req.body.avatar,
+      user: req.user.id
+    });
+
+    newPost.save().then(post => res.json(post));
+  }
+);
+
 // @route GET api/posts/:id
 // @desc Get post by id
 // @access Public
@@ -123,11 +147,11 @@ router.post(
   }
 );
 
-// @route   POST api/posts
-// @desc    Create post
-// @access  Private
+// @route POST api/posts/comment/:id
+// @desc Comment to post by id
+// @access Private
 router.post(
-  "/",
+  "/comment/:id",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     const { errors, isValid } = validatePostInput(req.body);
@@ -136,14 +160,51 @@ router.post(
       //if any errors
       return res.status(400).json(errors);
     }
-    const newPost = new Post({
-      text: req.body.text,
-      name: req.body.name,
-      avatar: req.body.avatar,
-      user: req.user.id
-    });
 
-    newPost.save().then(post => res.json(post));
+    Post.findById(req.params.id).then(post => {
+      const newComment = {
+        text: req.body.text,
+        name: req.body.name,
+        avatar: req.body.avatar,
+        user: req.user.id
+      };
+
+      // Add to comments array
+      post.comments.unshift(newComment);
+
+      // save
+      post
+        .save()
+        .then(post => res.json(post))
+        .catch(err => res.status(404).json({ postnotfound: "No post found" }));
+    });
+  }
+);
+
+// @route DELETE api/posts/:id/comment/:comment_id
+// @desc Delete comment on post by id
+// @access Private
+router.delete(
+  "/:id/comment/:comment_id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Post.findById(req.params.id).then(post => {
+      // Check to if comment exists
+      if (
+        post.comments.filter(
+          comment => comment._id.toString() === req.params.comment_id
+        ).length === 0
+      ) {
+        return res.status(404).json({ commentnotfound: "Comment not found" });
+      }
+      const removeIndex = post.comments
+        .map(item => item._id.toString())
+        .indexOf(req.params.comment_id);
+
+      // Splice out of array
+      post.comments.splice(removeIndex, 1);
+      post.save().then(post => res.json(post));
+    });
   }
 );
 
