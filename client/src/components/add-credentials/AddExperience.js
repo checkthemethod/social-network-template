@@ -45,7 +45,7 @@ class AddExperience extends Component {
 
     const expData = {
       company: this.state.company,
-      title: this.state.company,
+      title: this.state.title,
       location: this.state.location,
       from: this.state.from,
       to: this.state.to,
@@ -131,7 +131,7 @@ class AddExperience extends Component {
                   value={this.state.description}
                   onChange={this.onChange}
                   error={errors.description}
-                  info="Tellus about the position"
+                  info="Tell us about the position"
                 />
                 <input
                   type="submit"
